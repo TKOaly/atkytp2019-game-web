@@ -1,0 +1,31 @@
+{
+    "name": "atkytp2019-game-web",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "start": "cross-env NODE_ENV=production node index.js",
+        "dev": "cross-env NODE_ENV=development nodemon index.js",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/TKOaly/atkytp2019-game-web.git"
+    },
+    "author": "atkytpgame",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/TKOaly/atkytp2019-game-web/issues"
+    },
+    "homepage": "https://github.com/TKOaly/atkytp2019-game-web#readme",
+    "dependencies": {
+        "cors": "^2.8.5",
+        "express": "^4.16.4",
+        "mongoose": "^5.4.4"
+    },
+    "devDependencies": {
+        "nodemon": "^1.18.9",
+        "dotenv": "^6.2.0",
+        "cross-env": "^5.2.0"
+    }
+}
