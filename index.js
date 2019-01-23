@@ -10,7 +10,7 @@ const config = require('./utils/config')
 
 const highscoreRouter = require('./controllers/highscores')
 
-mongoose.connect(config.mongoUri)
+mongoose.connect(config.mongoUri, { useNewUrlParser: true })
 
 app.use(cors())
 app.use(bodyParser.json())
