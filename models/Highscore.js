@@ -1,8 +1,9 @@
 const mongoose = require('mongoose')
 
 const highscoreSchema = new mongoose.Schema({
-    name: String,
+    user: String,
     token: String,
+    installationId: String,
     score: Number
 })
 

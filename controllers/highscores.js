@@ -12,13 +12,14 @@ highscoreRouter.post('/', async (request, response) => {
     try {
         const body = request.body
 
-        if (body.name === undefined || body.token === undefined || body.score === undefined) {
-            return response.status(400).json({ error: 'name or token missing' })
+        if (body.user === undefined || body.token === undefined || body.installationId === undefined || body.score === undefined) {
+            return response.status(400).json({ error: 'some fields missing' })
         }
 
         const highscore = new Highscore({
-            name: body.name,
+            user: body.user,
             token: body.token,
+            installationId: body.installationId,
             score: body.score
         })
 
