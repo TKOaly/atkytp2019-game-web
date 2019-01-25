@@ -4,3 +4,7 @@ node_js:
 cache:
   directories:
     - "node_modules"
+
+env:
+- TEST_MONGODB_URI=$TEST_MONGODB_URI
+- TEST_PORT=$TEST_PORT
