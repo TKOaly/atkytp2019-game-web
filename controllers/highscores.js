@@ -40,11 +40,11 @@ const validate = async (highscore) => {
     const validationError = highscore.validateSync()
     const usernameTaken = await Highscore.findOne({ user: highscore.user })
     const tokenTaken = await Highscore.findOne({ token: highscore.token })
-    const intallationIdTaken = await Highscore.findOne({ installationId: highscore.installationId })
+    const installationIdTaken = await Highscore.findOne({ installationId: highscore.installationId })
 
     if (usernameTaken) errorMessages.push('Username already taken')
     if (tokenTaken) errorMessages.push('Token already taken')
-    if (intallationIdTaken) errorMessages.push('InstallationId already taken')
+    if (installationIdTaken) errorMessages.push('InstallationId already taken')
     if (validationError) {
         if (validationError.errors['user']) {
             errorMessages.push(validationError.errors['user'].message)
