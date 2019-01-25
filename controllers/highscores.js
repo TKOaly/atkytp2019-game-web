@@ -16,34 +16,12 @@ highscoreRouter.post('/', async (request, response) => {
             user: body.user,
             token: body.token,
             installationId: body.installationId,
-            score: body.score
+            score: 0
         })
 
-        const validationError = highscore.validateSync()
-        const users = await Highscore.countDocuments({ user: highscore.user })
-        const tokens = await Highscore.countDocuments({ token: highscore.token })
-        const installationIds = await Highscore.countDocuments({ installationId: highscore.installationId })
+        const errorMessages = await validate(highscore)
 
-        if (validationError || users || tokens || installationIds) {
-            const errorMessages = []
-            if (users) errorMessages.push('Username already taken')
-            if (tokens) errorMessages.push('Token already taken')
-            if (installationIds) errorMessages.push('InstallationId already taken')
-
-            if (validationError) {
-                if (validationError.errors['user']) {
-                    errorMessages.push(validationError.errors['user'].message)
-                }
-                if (validationError.errors['token']) {
-                    errorMessages.push(validationError.errors['token'].message)
-                }
-                if (validationError.errors['installationId']) {
-                    errorMessages.push(validationError.errors['installationId'].message)
-                }
-                if (validationError.errors['score']) {
-                    errorMessages.push(validationError.errors['score'].message)
-                }
-            }
+        if (errorMessages.length > 0) {
             return response.status(400).json({ error: errorMessages })
         }
 
@@ -55,5 +33,34 @@ highscoreRouter.post('/', async (request, response) => {
         response.status(500).json({ error: 'something went wrong...' })
     }
 })
+
+const validate = async (highscore) => {
+    const errorMessages = []
+
+    const validationError = highscore.validateSync()
+    const usernameTaken = await Highscore.findOne({ user: highscore.user })
+    const tokenTaken = await Highscore.findOne({ token: highscore.token })
+    const intallationIdTaken = await Highscore.findOne({ installationId: highscore.installationId })
+
+    if (usernameTaken) errorMessages.push('Username already taken')
+    if (tokenTaken) errorMessages.push('Token already taken')
+    if (intallationIdTaken) errorMessages.push('InstallationId already taken')
+    if (validationError) {
+        if (validationError.errors['user']) {
+            errorMessages.push(validationError.errors['user'].message)
+        }
+        if (validationError.errors['token']) {
+            errorMessages.push(validationError.errors['token'].message)
+        }
+        if (validationError.errors['installationId']) {
+            errorMessages.push(validationError.errors['installationId'].message)
+        }
+        if (validationError.errors['score']) {
+            errorMessages.push(validationError.errors['score'].message)
+        }
+    }
+
+    return errorMessages
+}
 
 module.exports = highscoreRouter
