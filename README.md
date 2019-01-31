@@ -3,3 +3,4 @@
 
 ## Links
 * [Frontend repo](https://github.com/Ohtu-ATKYTP/atkytp2019-game)
+* [Heroku](http://atkytpgame.herokuapp.com/api/highscores)
