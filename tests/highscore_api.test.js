@@ -35,18 +35,28 @@ describe('when there is initially some notes saved', async () => {
             expect(returnedUsers).toContain(highscore.user)
         })
     })
+
+    test('highscores contain user, token and score', async () => {
+        const response = await api.get('/api/highscores')
+
+        const highscores = response.body
+
+        highscores.forEach(highscore => {
+            expect(highscore.user).toBeDefined()
+            expect(highscore.token).toBeDefined()
+            expect(highscore.score).toBeDefined()
+        })
+    })
 })
 
 describe('addition of a new highscore', async () => {
 
-    test('POST /api/highscore succeeds with valid data', async () => {
+    test('succeeds with valid data', async () => {
         const highscoresAtStart = await highscoresInDb()
 
         const newHighscore = {
-            user: "Jone",
-            token: "2xxxS",
-            installationId: "ab4jkduv24sd5",
-            score: 0
+            user: 'Jone',
+            token: '2xxxS'
         }
 
         await api
@@ -63,62 +73,92 @@ describe('addition of a new highscore', async () => {
         expect(tokens).toContain(newHighscore.token)
     })
 
-    test('POST /api/highscore fails with proper statuscode if user is missing', async () => {
+    test('is initialized with score 0', async () => {
         const newHighscore = {
-            token: "3xxxT",
-            installationId: "jkdgdfv76sd5",
-            score: 0
+            user: 'Ocke',
+            token: '4xxxW'
+        }
+
+        const response = await api
+            .post('/api/highscores')
+            .send(newHighscore)
+            .expect(201)
+
+        const created = response.body
+
+        expect(created.score).toBe(0)
+    })
+
+    test('fails with proper error message if user is missing', async () => {
+        const newHighscore = {
+            token: '3xxxT'
         }
 
         const highscoresAtStart = await highscoresInDb()
 
-        await api
+        const response = await api
             .post('/api/highscores')
             .send(newHighscore)
             .expect(400)
+
+        const error = response.body.error
+
+        expect(error).toContain('User is required')
 
         const highscoresAfterOperation = await highscoresInDb()
 
         expect(highscoresAfterOperation.length).toBe(highscoresAtStart.length)
     })
 
-    test('POST /api/highscore fails with proper statuscode if token is missing', async () => {
+    test('fails with proper error message if token is missing', async () => {
         const newHighscore = {
-            user: "Pavi",
-            installationId: "jkdgdnhgsd5",
-            score: 0
+            user: 'Pavi'
         }
 
         const highscoresAtStart = await highscoresInDb()
 
-        await api
+        const response = await api
             .post('/api/highscores')
             .send(newHighscore)
             .expect(400)
+
+        const error = response.body.error
+
+        expect(error).toContain('Token is required')
 
         const highscoresAfterOperation = await highscoresInDb()
 
         expect(highscoresAfterOperation.length).toBe(highscoresAtStart.length)
     })
 
-    test('POST /api/highscore fails with proper statuscode if installationId is missing', async () => {
+    test('fails with proper error message if user and token is taken', async () => {
         const newHighscore = {
-            user: "Pavi",
-            token: "Hxcv2",
-            score: 0
+            user: 'Vine',
+            token: '5xxxL'
         }
-
-        const highscoresAtStart = await highscoresInDb()
 
         await api
             .post('/api/highscores')
             .send(newHighscore)
+            .expect(201)
+
+        const highscoresAtStart = await highscoresInDb()
+
+        const response = await api
+            .post('/api/highscores')
+            .send(newHighscore)
             .expect(400)
+
+        const error = response.body.error
+
+        expect(error).toContain('Username already taken')
+        expect(error).toContain('Token already taken')
 
         const highscoresAfterOperation = await highscoresInDb()
 
         expect(highscoresAfterOperation.length).toBe(highscoresAtStart.length)
     })
+
 })
 
 afterAll(() => {

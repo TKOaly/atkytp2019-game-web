@@ -13,12 +13,6 @@ const highscoreSchema = new mongoose.Schema({
         required: [true, 'Token is required'],
         dropDups: true
     },
-    installationId: {
-        type: String,
-        unique: [true, 'InstallationId must be unique'],
-        required: [true, 'InstallationId is required'],
-        dropDups: true
-    },
     score: {
         type: Number,
         min: [0, 'Score must be at least 0'],
