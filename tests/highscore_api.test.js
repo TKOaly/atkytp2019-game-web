@@ -14,113 +14,149 @@ describe('when there is initially some notes saved', async () => {
     })
 
     test('highscores are returned as json', async () => {
-        await api
-            .get('/api/highscores')
-            .expect(200)
-            .expect('Content-Type', /application\/json/)
+        await getAllAndExpectOk()
     })
 
-    test('all highscores are returned as json by GET /api/highscores', async () => {
+    test('all highscores are returned by GET /api/highscores', async () => {
         const highscoresInDatabase = await highscoresInDb()
 
-        const response = await api
-            .get('/api/highscores')
-            .expect(200)
-            .expect('Content-Type', /application\/json/)
+        const highscores = await getAllAndExpectOk()
 
-        expect(response.body.length).toBe(highscoresInDatabase.length)
+        expect(highscores.length).toBe(highscoresInDatabase.length)
 
-        const returnedUsers = response.body.map(highscore => highscore.user)
+        const returnedUsers = highscores.map(highscore => highscore.user)
         highscoresInDatabase.forEach(highscore => {
             expect(returnedUsers).toContain(highscore.user)
+        })
+        
+    })
+
+    test('highscores contain user, token and score', async () => {
+        const highscores = await getAllAndExpectOk()
+
+        highscores.forEach(highscore => {
+            isHighscore(highscore)
         })
     })
 })
 
 describe('addition of a new highscore', async () => {
 
-    test('POST /api/highscore succeeds with valid data', async () => {
-        const highscoresAtStart = await highscoresInDb()
-
+    test('succeeds with valid data', async () => {
         const newHighscore = {
-            user: "Jone",
-            token: "2xxxS",
-            installationId: "ab4jkduv24sd5",
-            score: 0
+            user: 'Jone',
+            token: '2xxxS'
         }
 
-        await api
-            .post('/api/highscores')
-            .send(newHighscore)
-            .expect(201)
-            .expect('Content-Type', /application\/json/)
-
-        const highscoresAfterOperation = await highscoresInDb()
-
-        expect(highscoresAfterOperation.length).toBe(highscoresAtStart.length + 1)
-
-        const tokens = highscoresAfterOperation.map(highscore => highscore.token)
-        expect(tokens).toContain(newHighscore.token)
+        await postAndExpectSuccess(newHighscore)
     })
 
-    test('POST /api/highscore fails with proper statuscode if user is missing', async () => {
+    test('is initialized with score 0', async () => {
         const newHighscore = {
-            token: "3xxxT",
-            installationId: "jkdgdfv76sd5",
-            score: 0
+            user: 'Ocke',
+            token: '4xxxW'
         }
 
-        const highscoresAtStart = await highscoresInDb()
+        const created = await postAndExpectSuccess(newHighscore)
 
-        await api
-            .post('/api/highscores')
-            .send(newHighscore)
-            .expect(400)
-
-        const highscoresAfterOperation = await highscoresInDb()
-
-        expect(highscoresAfterOperation.length).toBe(highscoresAtStart.length)
+        expect(created.score).toBe(0)
     })
 
-    test('POST /api/highscore fails with proper statuscode if token is missing', async () => {
+    test('fails with proper error message if user is missing', async () => {
         const newHighscore = {
-            user: "Pavi",
-            installationId: "jkdgdnhgsd5",
-            score: 0
+            token: '3xxxT'
         }
 
-        const highscoresAtStart = await highscoresInDb()
+        const expectedErrors = [
+            'User is required'
+        ]
 
-        await api
-            .post('/api/highscores')
-            .send(newHighscore)
-            .expect(400)
-
-        const highscoresAfterOperation = await highscoresInDb()
-
-        expect(highscoresAfterOperation.length).toBe(highscoresAtStart.length)
+        await postAndExpectErrors(newHighscore, expectedErrors)
     })
 
-    test('POST /api/highscore fails with proper statuscode if installationId is missing', async () => {
+    test('fails with proper error message if token is missing', async () => {
         const newHighscore = {
-            user: "Pavi",
-            token: "Hxcv2",
-            score: 0
+            user: 'Pavi'
         }
 
-        const highscoresAtStart = await highscoresInDb()
+        const expectedErrors = [
+            'Token is required'
+        ]
 
-        await api
-            .post('/api/highscores')
-            .send(newHighscore)
-            .expect(400)
-
-        const highscoresAfterOperation = await highscoresInDb()
-
-        expect(highscoresAfterOperation.length).toBe(highscoresAtStart.length)
+        await postAndExpectErrors(newHighscore, expectedErrors)
     })
+
+    test('fails with proper error message if user and token is taken', async () => {
+        const newHighscore = {
+            user: 'Vine',
+            token: '5xxxL'
+        }
+
+        await postAndExpectSuccess(newHighscore)
+
+        const expectedErrors = [
+            'Username already taken',
+            'Token already taken'
+        ]
+
+        await postAndExpectErrors(newHighscore, expectedErrors)
+    })
+
 })
 
 afterAll(() => {
     server.close()
 })
+
+//Helper functions
+const postAndExpectSuccess = async (newHighscore) => {
+    const highscoresAtStart = await highscoresInDb()
+    const response = await api
+        .post('/api/highscores')
+        .send(newHighscore)
+        .expect(201)
+        .expect('Content-Type', /application\/json/)
+
+    const highscoresAfterOperation = await highscoresInDb()
+    expect(highscoresAfterOperation.length).toBe(highscoresAtStart.length + 1)
+
+    const users = highscoresAfterOperation.map(highscore => highscore.user)
+    expect(users).toContain(newHighscore.user)
+
+    return response.body
+}
+
+const postAndExpectErrors = async (newHighscore, expectedErrors) => {
+    const highscoresAtStart = await highscoresInDb()
+
+    const response = await api
+        .post('/api/highscores')
+        .send(newHighscore)
+        .expect(400)
+        .expect('Content-Type', /application\/json/)
+
+    const error = response.body.error
+
+    expectedErrors.forEach(expectedError => {
+        expect(error).toContain(expectedError)
+    })
+
+    const highscoresAfterOperation = await highscoresInDb()
+
+    expect(highscoresAfterOperation.length).toBe(highscoresAtStart.length)
+}
+
+const getAllAndExpectOk = async () => {
+    const response = await api
+        .get('/api/highscores')
+        .expect(200)
+        .expect('Content-Type', /application\/json/)
+
+    return response.body
+}
+
+const isHighscore = (highscore) => {
+    expect(highscore.user).toBeDefined()
+    expect(highscore.token).toBeDefined()
+    expect(highscore.score).toBeDefined()
+}

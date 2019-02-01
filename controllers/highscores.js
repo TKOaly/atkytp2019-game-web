@@ -15,7 +15,6 @@ highscoreRouter.post('/', async (request, response) => {
         const highscore = new Highscore({
             user: body.user,
             token: body.token,
-            installationId: body.installationId,
             score: 0
         })
 
@@ -40,20 +39,15 @@ const validate = async (highscore) => {
     const validationError = highscore.validateSync()
     const usernameTaken = await Highscore.findOne({ user: highscore.user })
     const tokenTaken = await Highscore.findOne({ token: highscore.token })
-    const installationIdTaken = await Highscore.findOne({ installationId: highscore.installationId })
 
     if (usernameTaken) errorMessages.push('Username already taken')
     if (tokenTaken) errorMessages.push('Token already taken')
-    if (installationIdTaken) errorMessages.push('InstallationId already taken')
     if (validationError) {
         if (validationError.errors['user']) {
             errorMessages.push(validationError.errors['user'].message)
         }
         if (validationError.errors['token']) {
             errorMessages.push(validationError.errors['token'].message)
-        }
-        if (validationError.errors['installationId']) {
-            errorMessages.push(validationError.errors['installationId'].message)
         }
         if (validationError.errors['score']) {
             errorMessages.push(validationError.errors['score'].message)
