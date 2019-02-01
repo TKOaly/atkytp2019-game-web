@@ -28,7 +28,7 @@ describe('when there is initially some notes saved', async () => {
         highscoresInDatabase.forEach(highscore => {
             expect(returnedUsers).toContain(highscore.user)
         })
-        
+
     })
 
     test('highscores contain user, token and score', async () => {
@@ -104,6 +104,28 @@ describe('addition of a new highscore', async () => {
 
 })
 
+describe('updating a highscore', async () => {
+    
+    test('succeeds with valid data', async () => {
+        const newHighscore = {
+            user: 'ToBeUpdated',
+            token: '2updateS'
+        }
+
+        const created = await postAndExpectSuccess(newHighscore)
+
+        const newData = {
+            score: 5
+        }
+
+        const updated = await putAndExpectSuccess(created._id, newData)
+
+        expect(updated.score).toBe(5)
+    })
+
+    //TODO more tests for PUT
+})
+
 afterAll(() => {
     server.close()
 })
@@ -144,6 +166,16 @@ const postAndExpectErrors = async (newHighscore, expectedErrors) => {
     const highscoresAfterOperation = await highscoresInDb()
 
     expect(highscoresAfterOperation.length).toBe(highscoresAtStart.length)
+}
+
+const putAndExpectSuccess = async (id, newData) => {
+    const response = await api
+        .put('/api/highscores/' + id)
+        .send(newData)
+        .expect(200)
+        .expect('Content-Type', /application\/json/)
+
+    return response.body
 }
 
 const getAllAndExpectOk = async () => {
