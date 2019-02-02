@@ -52,8 +52,7 @@ highscoreRouter.put('/:id', async (request, response) => {
 
         response.json(updatedHighscore)
     } catch (exception) {
-        console.log(exception)
-        response.status(400).send({ error: 'malformatted id' })
+        response.status(400).send({ error: ['Malformatted id'] })
     }
 })
 
