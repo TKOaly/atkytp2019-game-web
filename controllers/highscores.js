@@ -5,7 +5,17 @@ highscoreRouter.get('/', async (request, response) => {
     const highscores = await Highscore
         .find({})
 
-    response.json(highscores)
+    response.json(highscores.map(Highscore.format))
+})
+
+highscoreRouter.get('/top', async (request, response) => {
+    const topHighscores = await Highscore
+        .find({})
+        .sort({ score: -1 })
+        .limit(10)
+        .exec()
+
+    response.json(topHighscores.map(Highscore.format))
 })
 
 highscoreRouter.post('/', async (request, response) => {
