@@ -82,9 +82,6 @@ const validate = async (highscore) => {
         if (validationError.errors['token']) {
             errorMessages.push(validationError.errors['token'].message)
         }
-        if (validationError.errors['score']) {
-            errorMessages.push(validationError.errors['score'].message)
-        }
     }
 
     return errorMessages
