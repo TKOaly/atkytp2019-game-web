@@ -1,6 +1,6 @@
 module.exports = {
     testEnvironment: 'node',
-    coverageDirectory: "./tests/coverage/",
+    coverageDirectory: './tests/coverage/',
     collectCoverage: true,
-    coveragePathIgnorePatterns: ["/utils/", "/tests/", "/node_modules/"]
+    coveragePathIgnorePatterns: ['/utils/', '/tests/', '/node_modules/']
 }

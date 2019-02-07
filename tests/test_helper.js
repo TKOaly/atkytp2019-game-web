@@ -2,63 +2,63 @@ const Highscore = require('../models/Highscore')
 
 const initialHighscores = [
     {
-        user: "Peter",
-        token: "1xxxH",
+        user: 'Peter',
+        token: '1xxxH',
         score: 2
     },
     {
-        user: "Axel",
-        token: "2xxxT",
+        user: 'Axel',
+        token: '2xxxT',
         score: 0
     },
     {
-        user: "Jone",
-        token: "3xxxT",
+        user: 'Jone',
+        token: '3xxxT',
         score: 5
     },
     {
-        user: "Pavi",
-        token: "4xxxT",
+        user: 'Pavi',
+        token: '4xxxT',
         score: 0
     },
     {
-        user: "Ocke",
-        token: "5xxxT",
+        user: 'Ocke',
+        token: '5xxxT',
         score: 10
     },
     {
-        user: "Pelle",
-        token: "6xxxT",
+        user: 'Pelle',
+        token: '6xxxT',
         score: 9
     },
     {
-        user: "Johan",
-        token: "7xxxT",
+        user: 'Johan',
+        token: '7xxxT',
         score: 0
     },
     {
-        user: "Mia",
-        token: "8xxxT",
+        user: 'Mia',
+        token: '8xxxT',
         score: 2
     },
     {
-        user: "Markus",
-        token: "9xxxT",
+        user: 'Markus',
+        token: '9xxxT',
         score: 0
     },
     {
-        user: "Markko",
-        token: "2xxxS",
+        user: 'Markko',
+        token: '2xxxS',
         score: 2
     },
     {
-        user: "Jaakko",
-        token: "3xxxS",
+        user: 'Jaakko',
+        token: '3xxxS',
         score: 1
     },
     {
-        user: "Jesper",
-        token: "4xxxS",
+        user: 'Jesper',
+        token: '4xxxS',
         score: 4
     }
 ]
@@ -75,8 +75,8 @@ const highscoreById = async (id) => {
 
 const nonExistingId = async () => {
     const nonExistingData = {
-        user: "NonExisting",
-        token: "nonexistingtoken",
+        user: 'NonExisting',
+        token: 'nonexistingtoken',
         score: 0
     }
     const highscore = new Highscore(nonExistingData)
