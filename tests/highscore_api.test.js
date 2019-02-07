@@ -171,7 +171,7 @@ describe('updating a highscore', async () => {
         await putAndExpectErrors(created._id, newData2, expectedErrors2)
 
         const newData3 = {
-            score: "abc"
+            score: 'abc'
         }
 
         const expectedErrors3 = [
