@@ -2,12 +2,12 @@ const supertest = require('supertest')
 const { app, server } = require('../index')
 const api = supertest(app)
 const Highscore = require('../models/Highscore')
-const { initialHighscores, highscoresInDb } = require('./test_helper')
+const { initialHighscores, highscoresInDb, highscoreById, nonExistingId } = require('./test_helper')
 
 describe('when there is initially some notes saved', async () => {
 
     beforeAll(async () => {
-        await Highscore.remove({})
+        await Highscore.deleteMany({})
 
         const highscoreObjects = initialHighscores.map(highscore => new Highscore(highscore))
         await Promise.all(highscoreObjects.map(highscore => highscore.save()))
@@ -41,6 +41,10 @@ describe('when there is initially some notes saved', async () => {
 })
 
 describe('addition of a new highscore', async () => {
+
+    beforeAll(async () => {
+        await Highscore.deleteMany({})
+    })
 
     test('succeeds with valid data', async () => {
         const newHighscore = {
@@ -105,7 +109,11 @@ describe('addition of a new highscore', async () => {
 })
 
 describe('updating a highscore', async () => {
-    
+
+    beforeAll(async () => {
+        await Highscore.deleteMany({})
+    })
+
     test('succeeds with valid data', async () => {
         const newHighscore = {
             user: 'ToBeUpdated',
@@ -118,12 +126,65 @@ describe('updating a highscore', async () => {
             score: 5
         }
 
-        const updated = await putAndExpectSuccess(created._id, newData)
-
-        expect(updated.score).toBe(5)
+        await putAndExpectSuccess(created._id, newData)
     })
 
-    //TODO more tests for PUT
+    test('fails with proper error message if score is not valid', async () => {
+        const newHighscore = {
+            user: 'ToBeUpdated2',
+            token: '3updateS'
+        }
+
+        const created = await postAndExpectSuccess(newHighscore)
+
+        const highscoreAtStart = await highscoreById(created._id)
+
+        const newData = {
+        }
+
+        const expectedErrors = [
+            'Score must be defined'
+        ]
+
+        await putAndExpectErrors(created._id, newData, expectedErrors)
+
+        const newData2 = {
+            score: -1
+        }
+
+        const expectedErrors2 = [
+            'Score must be at least 0'
+        ]
+
+        await putAndExpectErrors(created._id, newData2, expectedErrors2)
+
+        const newData3 = {
+            score: "abc"
+        }
+
+        const expectedErrors3 = [
+            'Score must be an integer'
+        ]
+
+        await putAndExpectErrors(created._id, newData3, expectedErrors3)
+
+        const highscoreAfterOperation = await highscoreById(created._id)
+
+        expect(highscoreAfterOperation.score).toBe(highscoreAtStart.score)
+    })
+
+    test('fails with proper error message if id not found', async () => {
+
+        const newData = {
+            score: 5
+        }
+
+        const expectedErrors = [
+            'Malformatted id'
+        ]
+
+        await putAndExpectErrors(nonExistingId(), newData, expectedErrors)
+    })
 })
 
 afterAll(() => {
@@ -175,7 +236,23 @@ const putAndExpectSuccess = async (id, newData) => {
         .expect(200)
         .expect('Content-Type', /application\/json/)
 
+    expect(response.body.score).toBe(newData.score)
+
     return response.body
+}
+
+const putAndExpectErrors = async (id, newData, expectedErrors) => {
+    const response = await api
+        .put('/api/highscores/' + id)
+        .send(newData)
+        .expect(400)
+        .expect('Content-Type', /application\/json/)
+
+    const error = response.body.error
+
+    expectedErrors.forEach(expectedError => {
+        expect(error).toContain(expectedError)
+    })
 }
 
 const getAllAndExpectOk = async () => {
