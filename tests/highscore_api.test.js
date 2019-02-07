@@ -4,7 +4,7 @@ const api = supertest(app)
 const Highscore = require('../models/Highscore')
 const { initialHighscores, highscoresInDb, highscoreById, nonExistingId } = require('./test_helper')
 
-describe('when there is initially some notes saved', async () => {
+describe('when there is initially some highscores saved', async () => {
 
     beforeAll(async () => {
         await Highscore.deleteMany({})
@@ -31,12 +31,24 @@ describe('when there is initially some notes saved', async () => {
 
     })
 
-    test('highscores contain user, token and score', async () => {
+    test('highscores are returned as user and score', async () => {
         const highscores = await getAllAndExpectOk()
 
         highscores.forEach(highscore => {
             isHighscore(highscore)
         })
+    })
+
+    test('top 10 highscores are returned by GET /api/highscores/top', async () => {
+        const topHighscores = await getTopAndExpectOk()
+
+        const highscoresInDatabase = await highscoresInDb()
+        highscoresInDatabase.sort((a, b) => b.score - a.score)
+
+        expect(topHighscores.length).toBe(10)
+
+        expect(topHighscores[0].user).toBe(highscoresInDatabase[0].user)
+        expect(topHighscores[0].score).toBe(highscoresInDatabase[0].score)
     })
 })
 
@@ -264,8 +276,16 @@ const getAllAndExpectOk = async () => {
     return response.body
 }
 
+const getTopAndExpectOk = async () => {
+    const response = await api
+        .get('/api/highscores/top')
+        .expect(200)
+        .expect('Content-Type', /application\/json/)
+
+    return response.body
+}
+
 const isHighscore = (highscore) => {
     expect(highscore.user).toBeDefined()
-    expect(highscore.token).toBeDefined()
     expect(highscore.score).toBeDefined()
 }
