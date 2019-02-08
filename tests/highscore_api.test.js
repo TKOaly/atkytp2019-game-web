@@ -50,6 +50,33 @@ describe('when there is initially some highscores saved', async () => {
         expect(topHighscores[0].user).toBe(highscoresInDatabase[0].user)
         expect(topHighscores[0].score).toBe(highscoresInDatabase[0].score)
     })
+
+    test('one highscores is returned by GET /api/highscores/:id', async () => {
+        const data = {
+            user: 'bestplayer',
+            token: 'tokenXXXbest'
+        }
+        const created = await postAndExpectSuccess(data)
+
+        const newData = {
+            score: 10000
+        }
+
+        const updated = await putAndExpectSuccess(created._id, newData)
+
+        const highscore = await getOneAndExpectOk(updated._id)
+
+        expect(highscore.user).toBe(data.user)
+        expect(highscore.score).toBe(newData.score)
+        expect(highscore.rank).toBe(1)
+    })
+
+    test('fails with proper error message if nonexisting id GET /api/highscores/:id', async () => {
+        const expectedErrors = [
+            'Malformatted id'
+        ]
+        await getOneAndExpectErrors(nonExistingId(), expectedErrors)
+    })
 })
 
 describe('addition of a new highscore', async () => {
@@ -285,7 +312,30 @@ const getTopAndExpectOk = async () => {
     return response.body
 }
 
+const getOneAndExpectOk = async (id) => {
+    const response = await api
+        .get('/api/highscores/' + id)
+        .expect(200)
+        .expect('Content-Type', /application\/json/)
+
+    return response.body
+}
+
+const getOneAndExpectErrors = async (id, expectedErrors) => {
+    const response = await api
+        .get('/api/highscores/' + id)
+        .expect(400)
+        .expect('Content-Type', /application\/json/)
+
+    const error = response.body.error
+
+    expectedErrors.forEach(expectedError => {
+        expect(error).toContain(expectedError)
+    })
+}
+
 const isHighscore = (highscore) => {
     expect(highscore.user).toBeDefined()
     expect(highscore.score).toBeDefined()
+    expect(highscore.rank).toBeDefined()
 }
