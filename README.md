@@ -10,6 +10,9 @@
 1. setup .env
 2. npm install
 3. npm run dev
+ -  runs on watch mode and uses dev database
 
 ## Test
 1. npm test
+  - runs eslint and jest tests
+  - coverage report generated to tests/coverage/
