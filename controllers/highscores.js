@@ -5,7 +5,7 @@ highscoreRouter.get('/', async (request, response) => {
     const highscores = await Highscore
         .find({})
 
-    response.json(highscores.map(Highscore.format))
+    response.json(highscores.map((highscore) => Highscore.format(highscore, -1)))
 })
 
 highscoreRouter.get('/top', async (request, response) => {
@@ -15,7 +15,29 @@ highscoreRouter.get('/top', async (request, response) => {
         .limit(10)
         .exec()
 
-    response.json(topHighscores.map(Highscore.format))
+    response.json(topHighscores.map((highscore, i) => Highscore.format(highscore, i + 1)))
+})
+
+highscoreRouter.get('/:id', async (request, response) => {
+    try {
+        const id = request.params.id
+        const highscore = await Highscore
+            .findById(id)
+
+        const topHighscores = await Highscore
+            .find({})
+            .sort({ score: -1 })
+            .exec()
+
+        const rank = topHighscores.findIndex(h => String(h._id) === id) + 1
+
+        const highscoreWithRank = Highscore.format(highscore)
+        highscoreWithRank.rank = rank
+
+        response.json(highscoreWithRank)
+    } catch (exception) {
+        response.status(400).send({ error: ['Malformatted id'] })
+    }
 })
 
 highscoreRouter.post('/', async (request, response) => {
@@ -39,7 +61,7 @@ highscoreRouter.post('/', async (request, response) => {
         response.status(201).json(savedHighscore)
     } catch (exception) {
         console.log(exception)
-        response.status(500).json({ error: 'something went wrong...' })
+        response.status(500).json({ error: ['something went wrong...'] })
     }
 })
 

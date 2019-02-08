@@ -20,10 +20,11 @@ const highscoreSchema = new mongoose.Schema({
     }
 })
 
-highscoreSchema.statics.format = (highscore) => {
+highscoreSchema.statics.format = (highscore, rank) => {
     return {
         user: highscore.user,
-        score: highscore.score
+        score: highscore.score,
+        rank: rank
     }
 }
 
