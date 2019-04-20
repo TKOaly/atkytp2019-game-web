@@ -4,9 +4,9 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "start": "NODE_ENV=production node index.js",
-        "dev": "NODE_ENV=development nodemon index.js",
-        "test": "npx eslint . && NODE_ENV=test jest --verbose"
+        "start": "node_modules/.bin/cross-env NODE_ENV=production node index.js",
+        "dev": "node_modules/.bin/cross-env NODE_ENV=development nodemon index.js",
+        "test": "npx eslint . && node_modules/.bin/cross-env NODE_ENV=test node_modules/.bin/jest --verbose"
     },
     "repository": {
         "type": "git",
@@ -24,10 +24,11 @@
         "mongoose": "^5.4.4"
     },
     "devDependencies": {
+        "cross-env": "^5.2.0",
         "dotenv": "^6.2.0",
-        "eslint": "^5.13.0",
         "jest": "^23.6.0",
         "nodemon": "^1.18.9",
-        "supertest": "^3.4.2"
+        "supertest": "^3.4.2",
+        "eslint": "^5.13.0"
     }
 }
