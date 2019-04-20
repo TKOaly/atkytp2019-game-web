@@ -1,9 +1,7 @@
 const mongoose = require('mongoose')
-
-const highscoreRouter = require('express').Router()
 const Highscore = require('../models/Highscore')
 
-highscoreRouter.get('/', async (request, response) => {
+const getAll = async (request, response) => {
     const highscores = await Highscore.aggregate([
         {
             '$sort': {
@@ -45,9 +43,9 @@ highscoreRouter.get('/', async (request, response) => {
         }
     ])
     response.json(highscores)
-})
+}
 
-highscoreRouter.get('/top', async (request, response) => {
+const getTop10 = async (request, response) => {
     const highscores = await Highscore.aggregate([
         {
             '$sort': {
@@ -92,9 +90,9 @@ highscoreRouter.get('/top', async (request, response) => {
         }
     ])
     response.json(highscores)
-})
+}
 
-highscoreRouter.get('/:id', async (request, response) => {
+const getOne = async (request, response) => {
     try {
         const id = request.params.id
         const highscores = await Highscore.aggregate([
@@ -142,13 +140,17 @@ highscoreRouter.get('/:id', async (request, response) => {
                 }
             }
         ])
-        response.json(highscores[0])
+        if (highscores.length !== 0) {
+            response.json(highscores[0])
+        } else {
+            response.status(400).send({ error: ['Malformatted id'] })
+        }
     } catch (exception) {
-        response.status(400).send({ error: ['Malformatted id'] })
+        response.status(500).json({ error: ['something went wrong...'] })
     }
-})
+}
 
-highscoreRouter.post('/', async (request, response) => {
+const create = async (request, response) => {
     try {
         const body = request.body
 
@@ -215,9 +217,9 @@ highscoreRouter.post('/', async (request, response) => {
         console.log(exception)
         response.status(500).json({ error: ['something went wrong...'] })
     }
-})
+}
 
-highscoreRouter.put('/:id', async (request, response) => {
+const update = async (request, response) => {
     try {
         const body = request.body
         const id = request.params.id
@@ -278,12 +280,11 @@ highscoreRouter.put('/:id', async (request, response) => {
             }
         ])
 
-
         response.json(highscores[0])
     } catch (exception) {
         response.status(400).send({ error: ['Malformatted id'] })
     }
-})
+}
 
 const validate = async (highscore) => {
     const errorMessages = []
@@ -324,4 +325,10 @@ const validateScore = (score) => {
     return errorMessages
 }
 
-module.exports = highscoreRouter
+module.exports = {
+    getAll,
+    getTop10,
+    getOne,
+    create,
+    update
+}

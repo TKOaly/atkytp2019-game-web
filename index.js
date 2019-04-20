@@ -8,7 +8,7 @@ const mongoose = require('mongoose')
 const middleware = require('./utils/middleware')
 const config = require('./utils/config')
 
-const highscoreRouter = require('./controllers/highscores')
+const highscoreRouter = require('./routes/highscoreRouter')
 
 mongoose.set('useCreateIndex', true)
 mongoose.connect(config.mongoUri, { useNewUrlParser: true })

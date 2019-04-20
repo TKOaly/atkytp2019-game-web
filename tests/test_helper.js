@@ -79,10 +79,9 @@ const nonExistingId = async () => {
         token: 'nonexistingtoken',
         score: 0
     }
-    const highscore = new Highscore(nonExistingData)
-    await highscore.save()
+    const newHighscore = new Highscore(nonExistingData)
+    const highscore = await newHighscore.save()
     await highscore.remove()
-
     return highscore._id.toString()
 }
 
