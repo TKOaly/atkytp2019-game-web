@@ -75,7 +75,7 @@ describe('when there is initially some highscores saved', async () => {
         const expectedErrors = [
             'Malformatted id'
         ]
-        await getOneAndExpectErrors(nonExistingId(), expectedErrors)
+        await getOneAndExpectErrors(await nonExistingId(), expectedErrors)
     })
 })
 
@@ -222,7 +222,7 @@ describe('updating a highscore', async () => {
             'Malformatted id'
         ]
 
-        await putAndExpectErrors(nonExistingId(), newData, expectedErrors)
+        await putAndExpectErrors(await nonExistingId(), newData, expectedErrors)
     })
 })
 
