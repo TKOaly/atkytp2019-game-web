@@ -1,40 +1,148 @@
+const mongoose = require('mongoose')
+
 const highscoreRouter = require('express').Router()
 const Highscore = require('../models/Highscore')
 
 highscoreRouter.get('/', async (request, response) => {
-    const highscores = await Highscore
-        .find({})
-
-    response.json(highscores.map((highscore) => Highscore.format(highscore, -1)))
+    const highscores = await Highscore.aggregate([
+        {
+            '$sort': {
+                'score': -1
+            }
+        },
+        {
+            '$group': {
+                '_id': 'false',
+                'highscores': {
+                    '$push': '$$ROOT'
+                }
+            }
+        },
+        {
+            '$unwind': {
+                'path': '$highscores',
+                'includeArrayIndex': 'highscores.rank'
+            }
+        },
+        {
+            '$replaceRoot': {
+                'newRoot': '$highscores'
+            }
+        },
+        {
+            '$addFields': {
+                'rank': {
+                    '$add': ['$rank', 1]
+                }
+            }
+        },
+        {
+            '$project': {
+                '_id': false,
+                'token': false,
+                '__v': false
+            }
+        }
+    ])
+    response.json(highscores)
 })
 
 highscoreRouter.get('/top', async (request, response) => {
-    const topHighscores = await Highscore
-        .find({})
-        .sort({ score: -1 })
-        .limit(10)
-        .exec()
-
-    response.json(topHighscores.map((highscore, i) => Highscore.format(highscore, i + 1)))
+    const highscores = await Highscore.aggregate([
+        {
+            '$sort': {
+                'score': -1
+            }
+        },
+        {
+            '$limit': 10
+        },
+        {
+            '$group': {
+                '_id': 'false',
+                'highscores': {
+                    '$push': '$$ROOT'
+                }
+            }
+        },
+        {
+            '$unwind': {
+                'path': '$highscores',
+                'includeArrayIndex': 'highscores.rank'
+            }
+        },
+        {
+            '$replaceRoot': {
+                'newRoot': '$highscores'
+            }
+        },
+        {
+            '$addFields': {
+                'rank': {
+                    '$add': ['$rank', 1]
+                }
+            }
+        },
+        {
+            '$project': {
+                '_id': false,
+                'token': false,
+                '__v': false
+            }
+        }
+    ])
+    response.json(highscores)
 })
 
 highscoreRouter.get('/:id', async (request, response) => {
     try {
         const id = request.params.id
-        const highscore = await Highscore
-            .findById(id)
-
-        const topHighscores = await Highscore
-            .find({})
-            .sort({ score: -1 })
-            .exec()
-
-        const rank = topHighscores.findIndex(h => String(h._id) === id) + 1
-
-        const highscoreWithRank = Highscore.format(highscore)
-        highscoreWithRank.rank = rank
-
-        response.json(highscoreWithRank)
+        const highscores = await Highscore.aggregate([
+            {
+                '$sort': {
+                    'score': -1
+                }
+            },
+            {
+                '$group': {
+                    '_id': 'false',
+                    'highscores': {
+                        '$push': '$$ROOT'
+                    }
+                }
+            },
+            {
+                '$unwind': {
+                    'path': '$highscores',
+                    'includeArrayIndex': 'highscores.rank'
+                }
+            },
+            {
+                '$replaceRoot': {
+                    'newRoot': '$highscores'
+                }
+            },
+            {
+                '$match': {
+                    '_id': mongoose.Types.ObjectId(id)
+                }
+            },
+            {
+                '$addFields': {
+                    'rank': {
+                        '$add': ['$rank', 1]
+                    }
+                }
+            },
+            {
+                '$project': {
+                    '_id': false,
+                    'token': false,
+                    '__v': false
+                }
+            }
+        ])
+        response.json(highscores[0])
     } catch (exception) {
         response.status(400).send({ error: ['Malformatted id'] })
     }
@@ -44,21 +152,65 @@ highscoreRouter.post('/', async (request, response) => {
     try {
         const body = request.body
 
-        const highscore = new Highscore({
+        const newHighscore = new Highscore({
             user: body.user,
             token: body.token,
             score: 0
         })
 
-        const errorMessages = await validate(highscore)
+        const errorMessages = await validate(newHighscore)
 
         if (errorMessages.length > 0) {
             return response.status(400).json({ error: errorMessages })
         }
 
-        const savedHighscore = await highscore.save()
+        const savedHighscore = await newHighscore.save()
 
-        response.status(201).json(savedHighscore)
+        const highscores = await Highscore.aggregate([
+            {
+                '$sort': {
+                    'score': -1
+                }
+            },
+            {
+                '$group': {
+                    '_id': 'false',
+                    'highscores': {
+                        '$push': '$$ROOT'
+                    }
+                }
+            },
+            {
+                '$unwind': {
+                    'path': '$highscores',
+                    'includeArrayIndex': 'highscores.rank'
+                }
+            },
+            {
+                '$replaceRoot': {
+                    'newRoot': '$highscores'
+                }
+            },
+            {
+                '$match': {
+                    '_id': mongoose.Types.ObjectId(savedHighscore._id)
+                }
+            },
+            {
+                '$addFields': {
+                    'rank': {
+                        '$add': ['$rank', 1]
+                    }
+                }
+            },
+            {
+                '$project': {
+                    '__v': false
+                }
+            }
+        ])
+
+        response.status(201).json(highscores[0])
     } catch (exception) {
         console.log(exception)
         response.status(500).json({ error: ['something went wrong...'] })
@@ -82,7 +234,52 @@ highscoreRouter.put('/:id', async (request, response) => {
 
         const updatedHighscore = await Highscore.findByIdAndUpdate(id, newData, { new: true })
 
-        response.json(updatedHighscore)
+        const highscores = await Highscore.aggregate([
+            {
+                '$sort': {
+                    'score': -1
+                }
+            },
+            {
+                '$group': {
+                    '_id': 'false',
+                    'highscores': {
+                        '$push': '$$ROOT'
+                    }
+                }
+            },
+            {
+                '$unwind': {
+                    'path': '$highscores',
+                    'includeArrayIndex': 'highscores.rank'
+                }
+            },
+            {
+                '$replaceRoot': {
+                    'newRoot': '$highscores'
+                }
+            },
+            {
+                '$match': {
+                    '_id': mongoose.Types.ObjectId(updatedHighscore.id)
+                }
+            },
+            {
+                '$addFields': {
+                    'rank': {
+                        '$add': ['$rank', 1]
+                    }
+                }
+            },
+            {
+                '$project': {
+                    '__v': false
+                }
+            }
+        ])
+
+
+        response.json(highscores[0])
     } catch (exception) {
         response.status(400).send({ error: ['Malformatted id'] })
     }

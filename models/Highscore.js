@@ -20,14 +20,6 @@ const highscoreSchema = new mongoose.Schema({
     }
 })
 
-highscoreSchema.statics.format = (highscore, rank) => {
-    return {
-        user: highscore.user,
-        score: highscore.score,
-        rank: rank
-    }
-}
-
 const Highscore = mongoose.model('Highscore', highscoreSchema)
 
 module.exports = Highscore
