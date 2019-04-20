@@ -2,151 +2,102 @@ const mongoose = require('mongoose')
 const Highscore = require('../models/Highscore')
 
 const getAll = async (request, response) => {
-    const highscores = await Highscore.aggregate([
-        {
-            '$sort': {
-                'score': -1
+    const highscores = await Highscore
+        .aggregate()
+        .sort({ score: -1 })
+        .group({
+            _id: false,
+            highscores: {
+                $push: '$$ROOT'
             }
-        },
-        {
-            '$group': {
-                '_id': 'false',
-                'highscores': {
-                    '$push': '$$ROOT'
-                }
+        })
+        .unwind({
+            path: '$highscores',
+            includeArrayIndex: 'highscores.rank'
+        })
+        .replaceRoot('highscores')
+        .addFields({
+            rank: {
+                $add: ['$rank', 1]
             }
-        },
-        {
-            '$unwind': {
-                'path': '$highscores',
-                'includeArrayIndex': 'highscores.rank'
-            }
-        },
-        {
-            '$replaceRoot': {
-                'newRoot': '$highscores'
-            }
-        },
-        {
-            '$addFields': {
-                'rank': {
-                    '$add': ['$rank', 1]
-                }
-            }
-        },
-        {
-            '$project': {
-                '_id': false,
-                'token': false,
-                '__v': false
-            }
-        }
-    ])
+        })
+        .project({
+            _id: false,
+            token: false,
+            __v: false
+        })
+        .exec()
+
     response.json(highscores)
 }
 
 const getTop10 = async (request, response) => {
-    const highscores = await Highscore.aggregate([
-        {
-            '$sort': {
-                'score': -1
+    const highscores = await Highscore
+        .aggregate()
+        .sort({ score: -1 })
+        .limit(10)
+        .group({
+            _id: false,
+            highscores: {
+                $push: '$$ROOT'
             }
-        },
-        {
-            '$limit': 10
-        },
-        {
-            '$group': {
-                '_id': 'false',
-                'highscores': {
-                    '$push': '$$ROOT'
-                }
+        })
+        .unwind({
+            path: '$highscores',
+            includeArrayIndex: 'highscores.rank'
+        })
+        .replaceRoot('highscores')
+        .addFields({
+            rank: {
+                $add: ['$rank', 1]
             }
-        },
-        {
-            '$unwind': {
-                'path': '$highscores',
-                'includeArrayIndex': 'highscores.rank'
-            }
-        },
-        {
-            '$replaceRoot': {
-                'newRoot': '$highscores'
-            }
-        },
-        {
-            '$addFields': {
-                'rank': {
-                    '$add': ['$rank', 1]
-                }
-            }
-        },
-        {
-            '$project': {
-                '_id': false,
-                'token': false,
-                '__v': false
-            }
-        }
-    ])
+        })
+        .project({
+            _id: false,
+            token: false,
+            __v: false
+        })
+        .exec()
+
     response.json(highscores)
 }
 
 const getOne = async (request, response) => {
-    try {
-        const id = request.params.id
-        const highscores = await Highscore.aggregate([
-            {
-                '$sort': {
-                    'score': -1
-                }
-            },
-            {
-                '$group': {
-                    '_id': 'false',
-                    'highscores': {
-                        '$push': '$$ROOT'
-                    }
-                }
-            },
-            {
-                '$unwind': {
-                    'path': '$highscores',
-                    'includeArrayIndex': 'highscores.rank'
-                }
-            },
-            {
-                '$replaceRoot': {
-                    'newRoot': '$highscores'
-                }
-            },
-            {
-                '$match': {
-                    '_id': mongoose.Types.ObjectId(id)
-                }
-            },
-            {
-                '$addFields': {
-                    'rank': {
-                        '$add': ['$rank', 1]
-                    }
-                }
-            },
-            {
-                '$project': {
-                    '_id': false,
-                    'token': false,
-                    '__v': false
-                }
+    const id = request.params.id
+
+    const highscores = await Highscore
+        .aggregate()
+        .sort({ score: -1 })
+        .group({
+            _id: false,
+            highscores: {
+                $push: '$$ROOT'
             }
-        ])
-        if (highscores.length !== 0) {
-            response.json(highscores[0])
-        } else {
-            response.status(400).send({ error: ['Malformatted id'] })
-        }
-    } catch (exception) {
-        response.status(500).json({ error: ['something went wrong...'] })
+        })
+        .unwind({
+            path: '$highscores',
+            includeArrayIndex: 'highscores.rank'
+        })
+        .replaceRoot('highscores')
+        .match({
+            _id: mongoose.Types.ObjectId(id)
+        })
+        .addFields({
+            rank: {
+                $add: ['$rank', 1]
+            }
+        })
+        .project({
+            _id: false,
+            token: false,
+            __v: false
+        })
+        .exec()
+
+    if (highscores.length !== 0) {
+        response.json(highscores[0])
+    } else {
+        response.status(400).send({ error: ['Malformatted id'] })
     }
 }
 
@@ -168,49 +119,32 @@ const create = async (request, response) => {
 
         const savedHighscore = await newHighscore.save()
 
-        const highscores = await Highscore.aggregate([
-            {
-                '$sort': {
-                    'score': -1
+        const highscores = await Highscore
+            .aggregate()
+            .sort({ score: -1 })
+            .group({
+                _id: false,
+                highscores: {
+                    $push: '$$ROOT'
                 }
-            },
-            {
-                '$group': {
-                    '_id': 'false',
-                    'highscores': {
-                        '$push': '$$ROOT'
-                    }
+            })
+            .unwind({
+                path: '$highscores',
+                includeArrayIndex: 'highscores.rank'
+            })
+            .replaceRoot('highscores')
+            .match({
+                _id: mongoose.Types.ObjectId(savedHighscore._id)
+            })
+            .addFields({
+                rank: {
+                    $add: ['$rank', 1]
                 }
-            },
-            {
-                '$unwind': {
-                    'path': '$highscores',
-                    'includeArrayIndex': 'highscores.rank'
-                }
-            },
-            {
-                '$replaceRoot': {
-                    'newRoot': '$highscores'
-                }
-            },
-            {
-                '$match': {
-                    '_id': mongoose.Types.ObjectId(savedHighscore._id)
-                }
-            },
-            {
-                '$addFields': {
-                    'rank': {
-                        '$add': ['$rank', 1]
-                    }
-                }
-            },
-            {
-                '$project': {
-                    '__v': false
-                }
-            }
-        ])
+            })
+            .project({
+                __v: false
+            })
+            .exec()
 
         response.status(201).json(highscores[0])
     } catch (exception) {
@@ -236,49 +170,32 @@ const update = async (request, response) => {
 
         const updatedHighscore = await Highscore.findByIdAndUpdate(id, newData, { new: true })
 
-        const highscores = await Highscore.aggregate([
-            {
-                '$sort': {
-                    'score': -1
+        const highscores = await Highscore
+            .aggregate()
+            .sort({ score: -1 })
+            .group({
+                _id: false,
+                highscores: {
+                    $push: '$$ROOT'
                 }
-            },
-            {
-                '$group': {
-                    '_id': 'false',
-                    'highscores': {
-                        '$push': '$$ROOT'
-                    }
+            })
+            .unwind({
+                path: '$highscores',
+                includeArrayIndex: 'highscores.rank'
+            })
+            .replaceRoot('highscores')
+            .match({
+                _id: mongoose.Types.ObjectId(updatedHighscore._id)
+            })
+            .addFields({
+                rank: {
+                    $add: ['$rank', 1]
                 }
-            },
-            {
-                '$unwind': {
-                    'path': '$highscores',
-                    'includeArrayIndex': 'highscores.rank'
-                }
-            },
-            {
-                '$replaceRoot': {
-                    'newRoot': '$highscores'
-                }
-            },
-            {
-                '$match': {
-                    '_id': mongoose.Types.ObjectId(updatedHighscore.id)
-                }
-            },
-            {
-                '$addFields': {
-                    'rank': {
-                        '$add': ['$rank', 1]
-                    }
-                }
-            },
-            {
-                '$project': {
-                    '__v': false
-                }
-            }
-        ])
+            })
+            .project({
+                __v: false
+            })
+            .exec()
 
         response.json(highscores[0])
     } catch (exception) {
