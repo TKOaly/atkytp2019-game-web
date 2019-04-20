@@ -9,8 +9,12 @@
 ## Development
 1. setup .env
 2. npm install
-3. npm run dev
- -  runs on watch mode and uses dev database
+3. npm run dev (runs on watch mode and uses dev database)
+
+- Database schema can be found under models.
+- Routes and validators can be found under controllers.
+- Setting enviroment variables in config.js under utils.
+- Middlewares in middleware.js under utils.
 
 ## Test
 1. npm test
