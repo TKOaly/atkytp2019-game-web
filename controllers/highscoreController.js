@@ -1,5 +1,8 @@
 const mongoose = require('mongoose')
+const cachegoose = require('cachegoose')
 const Highscore = require('../models/Highscore')
+
+cachegoose(mongoose)
 
 const getAll = async (request, response) => {
     const highscores = await Highscore
@@ -26,6 +29,7 @@ const getAll = async (request, response) => {
             token: false,
             __v: false
         })
+        .cache(0, 'all_highscores')
         .exec()
 
     response.json(highscores)
@@ -57,6 +61,7 @@ const getTop10 = async (request, response) => {
             token: false,
             __v: false
         })
+        .cache(0, 'top_10_highscores')
         .exec()
 
     response.json(highscores)
@@ -92,6 +97,7 @@ const getOne = async (request, response) => {
             token: false,
             __v: false
         })
+        .cache(0, `${id}-highscore`)
         .exec()
 
     if (highscores.length !== 0) {
@@ -146,6 +152,7 @@ const create = async (request, response) => {
             })
             .exec()
 
+        cachegoose.clearCache()
         response.status(201).json(highscores[0])
     } catch (exception) {
         console.log(exception)
@@ -197,6 +204,7 @@ const update = async (request, response) => {
             })
             .exec()
 
+        cachegoose.clearCache()
         response.json(highscores[0])
     } catch (exception) {
         response.status(400).send({ error: ['Malformatted id'] })
