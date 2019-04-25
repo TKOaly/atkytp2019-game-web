@@ -73,9 +73,16 @@ describe('when there is initially some highscores saved', async () => {
 
     test('fails with proper error message if nonexisting id GET /api/highscores/:id', async () => {
         const expectedErrors = [
-            'Malformatted id'
+            'Highscore with given id not found'
         ]
         await getOneAndExpectErrors(await nonExistingId(), expectedErrors)
+    })
+
+    test('fails with proper error message if malformatted id GET /api/highscores/:id', async () => {
+        const expectedErrors = [
+            'Malformatted id'
+        ]
+        await getOneAndExpectErrors('asd123', expectedErrors)
     })
 })
 

@@ -68,41 +68,45 @@ const getTop10 = async (request, response) => {
 }
 
 const getOne = async (request, response) => {
-    const id = request.params.id
+    try {
+        const id = request.params.id
 
-    const highscores = await Highscore
-        .aggregate()
-        .sort({ score: -1 })
-        .group({
-            _id: false,
-            highscores: {
-                $push: '$$ROOT'
-            }
-        })
-        .unwind({
-            path: '$highscores',
-            includeArrayIndex: 'highscores.rank'
-        })
-        .replaceRoot('highscores')
-        .match({
-            _id: mongoose.Types.ObjectId(id)
-        })
-        .addFields({
-            rank: {
-                $add: ['$rank', 1]
-            }
-        })
-        .project({
-            _id: false,
-            token: false,
-            __v: false
-        })
-        .cache(0, `${id}-highscore`)
-        .exec()
+        const highscores = await Highscore
+            .aggregate()
+            .sort({ score: -1 })
+            .group({
+                _id: false,
+                highscores: {
+                    $push: '$$ROOT'
+                }
+            })
+            .unwind({
+                path: '$highscores',
+                includeArrayIndex: 'highscores.rank'
+            })
+            .replaceRoot('highscores')
+            .match({
+                _id: mongoose.Types.ObjectId(id)
+            })
+            .addFields({
+                rank: {
+                    $add: ['$rank', 1]
+                }
+            })
+            .project({
+                _id: false,
+                token: false,
+                __v: false
+            })
+            .cache(0, `${id}-highscore`)
+            .exec()
 
-    if (highscores.length !== 0) {
-        response.json(highscores[0])
-    } else {
+        if (highscores.length !== 0) {
+            response.json(highscores[0])
+        } else {
+            response.status(400).send({ error: ['Highscore with given id not found'] })
+        }
+    } catch(exception) {
         response.status(400).send({ error: ['Malformatted id'] })
     }
 }
