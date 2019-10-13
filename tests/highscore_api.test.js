@@ -242,6 +242,7 @@ const postAndExpectSuccess = async (newHighscore) => {
     const highscoresAtStart = await highscoresInDb()
     const response = await api
         .post('/api/highscores')
+        .set('X-Authorization-Token', process.env.AUTH_TOKEN)
         .send(newHighscore)
         .expect(201)
         .expect('Content-Type', /application\/json/)
@@ -260,6 +261,7 @@ const postAndExpectErrors = async (newHighscore, expectedErrors) => {
 
     const response = await api
         .post('/api/highscores')
+        .set('X-Authorization-Token', process.env.AUTH_TOKEN)
         .send(newHighscore)
         .expect(400)
         .expect('Content-Type', /application\/json/)
@@ -278,6 +280,7 @@ const postAndExpectErrors = async (newHighscore, expectedErrors) => {
 const putAndExpectSuccess = async (id, newData) => {
     const response = await api
         .put('/api/highscores/' + id)
+        .set('X-Authorization-Token', process.env.AUTH_TOKEN)
         .send(newData)
         .expect(200)
         .expect('Content-Type', /application\/json/)
@@ -290,6 +293,7 @@ const putAndExpectSuccess = async (id, newData) => {
 const putAndExpectErrors = async (id, newData, expectedErrors) => {
     const response = await api
         .put('/api/highscores/' + id)
+        .set('X-Authorization-Token', process.env.AUTH_TOKEN)
         .send(newData)
         .expect(400)
         .expect('Content-Type', /application\/json/)
@@ -304,6 +308,7 @@ const putAndExpectErrors = async (id, newData, expectedErrors) => {
 const getAllAndExpectOk = async () => {
     const response = await api
         .get('/api/highscores')
+        .set('X-Authorization-Token', process.env.AUTH_TOKEN)
         .expect(200)
         .expect('Content-Type', /application\/json/)
 
@@ -313,6 +318,7 @@ const getAllAndExpectOk = async () => {
 const getTopAndExpectOk = async () => {
     const response = await api
         .get('/api/highscores/top')
+        .set('X-Authorization-Token', process.env.AUTH_TOKEN)
         .expect(200)
         .expect('Content-Type', /application\/json/)
 
@@ -322,6 +328,7 @@ const getTopAndExpectOk = async () => {
 const getOneAndExpectOk = async (id) => {
     const response = await api
         .get('/api/highscores/' + id)
+        .set('X-Authorization-Token', process.env.AUTH_TOKEN)
         .expect(200)
         .expect('Content-Type', /application\/json/)
 
@@ -331,6 +338,7 @@ const getOneAndExpectOk = async (id) => {
 const getOneAndExpectErrors = async (id, expectedErrors) => {
     const response = await api
         .get('/api/highscores/' + id)
+        .set('X-Authorization-Token', process.env.AUTH_TOKEN)
         .expect(400)
         .expect('Content-Type', /application\/json/)
 
