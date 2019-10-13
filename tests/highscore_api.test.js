@@ -4,7 +4,7 @@ const api = supertest(app)
 const Highscore = require('../models/Highscore')
 const { initialHighscores, highscoresInDb, highscoreById, nonExistingId } = require('./test_helper')
 
-describe('when there is initially some highscores saved', async () => {
+describe('when there is initially some highscores saved', () => {
 
     beforeAll(async () => {
         await Highscore.deleteMany({})
@@ -86,7 +86,7 @@ describe('when there is initially some highscores saved', async () => {
     })
 })
 
-describe('addition of a new highscore', async () => {
+describe('addition of a new highscore', () => {
 
     beforeAll(async () => {
         await Highscore.deleteMany({})
@@ -154,7 +154,7 @@ describe('addition of a new highscore', async () => {
 
 })
 
-describe('updating a highscore', async () => {
+describe('updating a highscore', () => {
 
     beforeAll(async () => {
         await Highscore.deleteMany({})
