@@ -1,16 +1,20 @@
 language: node_js
-node_js: 
-  - "stable"
+node_js:
+- stable
 services:
-  - mongodb
+- mongodb
 cache:
   directories:
-    - "node_modules"
+  - node_modules
 install:
-  - npm install
-  - npm install -g codecov
+- npm install
+- npm install -g codecov
 before_script:
-  - mongo atkytp --eval 'db.createUser({user:"travis",pwd:"test",roles:["readWrite"]});'
+- mongo atkytp --eval 'db.createUser({user:"travis",pwd:"test",roles:["readWrite"]});'
 script:
-  - npm test
-  - codecov
+- npm test
+- codecov
+deploy:
+  provider: heroku
+  api_key:
+    secure: FHE1DOg6Q5Bjl2WWSIrMJ5oqLsnGki7gpoThJZf/wfMZpRr5fH0+fQZbVfIedZVPTM/LFUXFQPOLK9jl4+MIza3Dz2SO8Koyml8J1gSP7rkreanwEBfOXkMllz5Uqct+Bw+giGZjdRj0Lt1TU6F3UlbYoXUCP/KWFZEq5XH565ECkJWk3RfbhN4s40vYR8YGDBsG0kkIYeHXxAXeoadJ0SP9XL4rzbS1l3l2WWVXoCR/WaHysaob6Fj9wB0VfSxMbUxmaTQRXyIp11Qj5IrLeA2zoKqHVQRnyP5EDMKKh0ldrJ72mFOJX6DnxUHC5ZpWE6132DkeZa2ud9CeTUMViyeO+qgWy5/ljfLzmWeVcyp0AbIY4pyJzzHWxn+CPAb+Dh1w3uWFiSZSOJ1oyRVdbdWG/iVXS/mUDt81Uz3Cw3P9ahy4yca60NQpKtXhxBRox5NjgYhUOC67Gukglpi79PZwFTNdGcefCTzpdfAr4LVBpORzYb7AIBBCZx4EhQa3wiKIjUWCEo2+XczgpHLL1wo0WKwF5UUdUYklQreYWQgPHNKthVnucKyel3z6xKOidUzOiNOhlOo9vp5qwD67ccdlFeL1UnoSP8Jw+wVsiLTJgQjcyXzu3Ns2sO2/1dCPdZ2UUuNJtG8TNrC5EoiDiaaa+Kcr2MXdcvx3MDoMqoc=
